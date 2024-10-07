@@ -4,6 +4,8 @@ import coon from './db/coon.js'
 
 //import Rotas
 
+import UserRoutes from "./routes/UserRoutes.js"
+
 coon();
 const app = express();
 
@@ -20,7 +22,7 @@ app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
 app.use(express.static(`public`))
 
 //Routes 
-//app.use('/users', UserRoutes)
+app.use('/users', UserRoutes)
 
 app.listen(5000, function(){
     console.log("Servidor Online!!");
