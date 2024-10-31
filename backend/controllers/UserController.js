@@ -13,6 +13,7 @@ import createUserToken from "../helpers/create-user-token.js";
 const UserModel = User;
 
 const userController = {
+
   register: async (req, res) => {
     const { name, email, password, confirmpassword, language, about } = req.body;
 
@@ -29,14 +30,14 @@ const userController = {
     }
 
     if (!language || !language.idioma || !language.level) {
-        res.status(422).json({ message: "O idioma e o nível são obrigatórios" });
-        return;
+      res.status(422).json({ message: "O idioma e o nível são obrigatórios" });
+      return;
     }
 
     if (!about) {
-        res.status(422).json({ message: "O Sobre é obrigatório" });
-        return;
-      }
+      res.status(422).json({ message: "O Sobre é obrigatório" });
+      return;
+    }
 
     if (!password) {
       res.status(422).json({ message: "A senha é obrigatória" });
@@ -52,7 +53,7 @@ const userController = {
       res.status(422).json({
         message: "A senha e a confirmaçaõ de senha precisam ser iguais",
       });
-      return; 
+      return;
     }
 
     //Check if user exist
@@ -68,25 +69,38 @@ const userController = {
     const salt = await bcrypt.genSalt(12);
     const passwordHash = await bcrypt.hash(password, salt);
 
-     // create user
-     const user = new UserModel({
-        name,
-        email,
-        language,
-        password: passwordHash,
+    // create user
+    const user = new UserModel({
+      name,
+      email,
+      language,
+      about,
+      password: passwordHash,
     });
- 
-    try {
-                
-        const newUser = await user.save();
 
-        await createUserToken(newUser, req, res);
+    try {
+
+      const newUser = await user.save();
+
+      /*       res.status(201).json({
+      
+               message: "Usuario Criado",
+               newUser 
+      
+              }); */
+
+      await createUserToken(newUser, req, res);
 
     } catch (error) {
-        res.status(500).json({message: error})
+      res.status(500).json({ message: error })
     }
 
   },
+
+  login: async(req, res) =>{
+    
+  }
+
 };
 
 export default userController;

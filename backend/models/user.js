@@ -19,6 +19,11 @@ const userSchema = new Schema({
         image:{
             type: String,
         },
+        
+        about:{
+            type: String,
+            required: true
+        },
 
         language:{
 
@@ -32,11 +37,6 @@ const userSchema = new Schema({
                 required: true
             },
 
-        },
-
-        about:{
-            type: String,
-            required: true
         },
 
       /*role:{
