@@ -9,8 +9,8 @@ import jwt from "jsonwebtoken";
 //helpers
 import createUserToken from "../helpers/create-user-token.js";
 import getToken from "../helpers/get-token.js";
-/* import getUserByToken from "../helpers/get-user-by-token.js";
- */
+import getUserByToken from "../helpers/get-user-by-token.js";
+
 
 const UserModel = User;
 
@@ -97,7 +97,7 @@ const userController = {
       res.status(500).json({ message: error })
     }
 
-  },
+  }, 
 
   login: async (req, res) => {
 
@@ -176,7 +176,7 @@ const userController = {
         res.status(422).json({ message: 'Usuario não encotrado' });
         return;
       }
- 
+
       res.status(200).json({ user });
 
 
@@ -186,6 +186,109 @@ const userController = {
     }
 
   },
+
+  editUser: async (req, res) => {
+
+    try {
+
+      const token = getToken(req);
+
+      const user = await getUserByToken(token);
+
+
+      const { name, email, password, confirmpassword, language, about } = req.body;
+
+      let image = ''; 
+
+      const id = req.params.id;
+
+      //validation
+      if (!name) {
+        res.status(422).json({ message: 'O nome é obrigatório' });
+        return;
+      }
+
+      user.name = name;
+
+      if (!email) {
+        res.status(422).json({ message: 'O email é obrigatório' });
+        return;
+      }
+
+      const userExist = await UserModel.findOne({ email: email });
+
+
+      //check if email has already taken
+      if (user.email !== email && userExist) {
+
+        res.status(422).json({ message: 'Por favor, Ultilize outro email' });
+        return;
+
+      }
+
+      user.email = email;
+
+      if (!language || !language.idioma || !language.level) {
+        res.status(422).json({ message: "O idioma e o nível são obrigatórios" });
+        return;
+      }
+
+      user.language = language;
+
+      if (!about) {
+        res.status(422).json({ message: "O Sobre é obrigatório" });
+        return;
+      }
+
+      user.about = about;
+
+      if (!password) {
+        res.status(422).json({ message: 'A senha é obrigatória' });
+        return;
+      }
+
+      if (password !== confirmpassword) {
+        res.status(422).json({ message: 'A senha e a confirmaçaõ de senha precisam ser iguais' });
+        return;
+      }
+      else if (password == confirmpassword && password != null) {
+
+        //create password
+        const salt = await bcrypt.genSalt(12);
+        const passwordHash = await bcrypt.hash(password, salt);
+
+        user.password = passwordHash;
+      }
+
+
+      try {
+
+        // returns user updated data
+
+        const updateUser = await User.findOneAndUpdate(
+          { _id: user._id },
+          { $set: user },
+          { new: true },
+        )
+
+        res.status(200).json({ message: "Usuario atualizado com sucesso!" })
+
+      } catch (error) {
+
+        res.status(500).json({ message: error });
+        return;
+
+      }
+
+
+
+    } catch (error) {
+      console.log(error);
+    }
+
+
+  },
+
 
 };
 

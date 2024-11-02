@@ -3,6 +3,9 @@ const router = express.Router();
 
 import UserController from '../controllers/UserController.js';
 
+//midleware
+import verifyToken from "../helpers/verify-token.js"
+
 router.route('/register')
 .post((req, res) => UserController.register(req, res));
 
