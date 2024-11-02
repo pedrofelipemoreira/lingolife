@@ -198,7 +198,9 @@ const userController = {
 
       const { name, email, password, confirmpassword, language, about } = req.body;
 
-      let image = ''; 
+      if(req.file){
+        user.image = req.file.filename;
+      }
 
       const id = req.params.id;
 
@@ -228,12 +230,12 @@ const userController = {
 
       user.email = email;
 
-      if (!language || !language.idioma || !language.level) {
+/*       if (!language || !language.idioma || !language.level) {
         res.status(422).json({ message: "O idioma e o nível são obrigatórios" });
         return;
-      }
+      } 
 
-      user.language = language;
+      user.language = language; */
 
       if (!about) {
         res.status(422).json({ message: "O Sobre é obrigatório" });
