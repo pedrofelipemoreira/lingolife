@@ -8,7 +8,9 @@ import jwt from "jsonwebtoken";
 
 //helpers
 import createUserToken from "../helpers/create-user-token.js";
-
+import getToken from "../helpers/get-token.js";
+/* import getUserByToken from "../helpers/get-user-by-token.js";
+ */
 
 const UserModel = User;
 
@@ -97,9 +99,93 @@ const userController = {
 
   },
 
-  login: async(req, res) =>{
-     
-  }
+  login: async (req, res) => {
+
+    const { email, password } = req.body;
+
+    if (!email) {
+      res.status(422).json({ message: 'O email é obrigatório' });
+      return;
+    }
+
+    if (!password) {
+      res.status(422).json({ message: 'A senha é obrigatória' });
+      return;
+    }
+
+    //check if user exists
+    const user = await UserModel.findOne({ email: email });
+
+    if (!user) {
+      res.status(422).json({ message: 'Não há usuario cadastrado com esse email' });
+      return;
+    }
+
+    //check if password match with db password
+    const checkPassword = await bcrypt.compare(password, user.password);
+
+    if (!checkPassword) {
+      res.status(422).json({ message: 'Senha invalida' });
+      return;
+    }
+
+    await createUserToken(user, req, res);
+
+
+  },
+
+  checkUser: async (req, res) => {
+
+    try {
+
+      let currentUser;
+
+      if (req.headers.authorization) {
+
+        const token = getToken(req);
+        const decoded = jwt.verify(token, 'nossosecret');
+
+        currentUser = await UserModel.findById(decoded.id);
+
+        currentUser.password = undefined;
+
+      }
+      else {
+        currentUser = null;
+      }
+
+      res.status(200).send(currentUser);
+
+
+    } catch (error) {
+      console.log(error);
+    }
+
+  },
+
+  getUserById: async (req, res) => {
+
+    try {
+
+      const id = req.params.id;
+
+      const user = await UserModel.findById(id).select("-password");
+
+      if (!user) {
+
+        res.status(422).json({ message: 'Usuario não encotrado' });
+        return;
+      }
+ 
+      res.status(200).json({ user });
+
+
+
+    } catch (error) {
+      console.log(error);
+    }
+
+  },
 
 };
 
